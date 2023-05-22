@@ -29,11 +29,8 @@ def analyze_urls(urls):
         # Sleep for 15 seconds to avoid exceeding the VirusTotal API rate limit
         time.sleep(15)
 
-# List of URLs to analyze
-urls = [
-    'http://google.com',
-    'http://bing.com',
-    'http://facebook.com',
-]
+# Read URLs from file
+with open('url.txt', 'r') as file:
+    urls = file.read().split(',')
 
 analyze_urls(urls)
