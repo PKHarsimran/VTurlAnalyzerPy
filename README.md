@@ -3,7 +3,7 @@ This script uses the VirusTotal API to analyze a list of URLs for potential secu
 
 ## Setup
 
-   1 Clone this repository to your local machine.
-   2 Install the required Python libraries. You can do this by running pip install -r requirements.txt (make sure you have Python and pip installed).
-   3 Get your VirusTotal API key. If you don't have one, you can register for a free account and get it.
-   4 Set your VirusTotal API key as an environment variable named VT_API_KEY.
+1. Clone this repository to your local machine.
+2. Install the required Python libraries. You can do this by running pip install -r requirements.txt (make sure you have Python and pip installed).
+3. Get your VirusTotal API key. If you don't have one, you can register for a free account and get it.
+4. Set your VirusTotal API key as an environment variable named VT_API_KEY.
