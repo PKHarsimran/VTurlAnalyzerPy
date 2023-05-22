@@ -17,7 +17,7 @@ This script uses the VirusTotal API to analyze a list of URLs for potential secu
 ## Usage
 
 * Prepare a .txt file with a list of URLs you want to analyze, separated by commas (e.g., google.com,wscript.shell,techcommunity.microsoft.com,learn.microsoft.com,msrc.microsoft.com,a9tcsbn.run).
-* Run the script with the following command: **python VTurlAnalyzerPy.py <path_to_your_file>** , where **<path_to_your_file>** is the path to the .txt file containing the URLs.
+* Run the script with the following command: **python VTUrlAnalyzerPy.py <path_to_your_file>** , where **<path_to_your_file>** is the path to the .txt file containing the URLs.
 
 The script will analyze each URL and print the results to the console. After analyzing each URL, the script will pause for 15 seconds to avoid exceeding the VirusTotal API rate limit.
 
