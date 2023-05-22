@@ -12,8 +12,13 @@ def get_url_report(url):
 
     # Check if the request was successful
     if json_response['response_code'] == 1:
-        # Return the positive detections and total scans
-        return json_response['positives'], json_response['total']
+        # Return additional information
+        positives = json_response['positives']
+        total = json_response['total']
+        scan_date = json_response['scan_date']
+        scan_id = json_response['scan_id']
+        permalink = json_response['permalink']
+        return positives, total, scan_date, scan_id, permalink
     else:
         return None
 
@@ -21,8 +26,8 @@ def analyze_urls(urls):
     for url in urls:
         result = get_url_report(url)
         if result:
-            positives, total = result
-            print(f'URL: {url}\nDetected Threats: {positives}\nTotal Scans: {total}\n')
+            positives, total, scan_date, scan_id, permalink = result
+            print(f'URL: {url}\nDetected Threats: {positives}\nTotal Scans: {total}\nScan Date: {scan_date}\nScan ID: {scan_id}\nPermalink: {permalink}\n')
         else:
             print(f'No information available for URL: {url}\n')
 
