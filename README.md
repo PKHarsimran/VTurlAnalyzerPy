@@ -1,35 +1,87 @@
-# VTurlAnalyzerPy
-This script uses the VirusTotal API to analyze a list of URLs for potential security threats. It provides detailed information about each URL, including the number of positive detections from various antivirus engines, total scans, the date of the last scan, scan ID, and a permalink to the scan report.
+# VirusTotal URL Analysis Script
 
-## Libraries Used and Why
-* **requests:** This library is used for making HTTP requests to the VirusTotal API. It is simple and concise, making it a popular choice for interacting with REST APIs in Python.
-* **os:** The os module in Python provides functions for interacting with the operating system. It's used in this script to read the VirusTotal API key from an environment variable.
-* **time:** This module provides various time-related functions. In this script, it's used to pause execution between API requests to avoid exceeding the VirusTotal API rate limit.
-* **click:** Click is a Python package for creating beautiful command-line interfaces. In this script, it's used to accept a file path as a command-line argument.
+This script reads a list of URLs from a CSV file, analyzes them using the VirusTotal API, and generates a report with detailed threat information. The results are saved to a new CSV file, and logs are maintained for debugging purposes.
+
+## Features
+
+- Reads URLs from a CSV file
+- Analyzes URLs using the VirusTotal API
+- Retrieves detected threats, total scans, scan date, scan ID, permalink, and categories
+- Saves analysis results to a new CSV file
+- Displays a progress bar with estimated time remaining
+- Logs detailed information for debugging
+- Automatically installs required packages
+
+## Requirements
+
+- Python 3.6 or higher
+
+## Installation
+
+1. Clone this repository or download the script file.
+2. Create a `requirements.txt` file with the following content:
+    ```
+    requests
+    pandas
+    click
+    tqdm
+    ```
 
 ## Setup
 
-1. Clone this repository to your local machine.
-2. Install the required Python libraries. You can do this by running pip install -r requirements.txt (make sure you have Python and pip installed).
-3. Get your VirusTotal API key. If you don't have one, you can register for a free account and get it.
-4. Set your VirusTotal API key as an environment variable named VT_API_KEY.
+1. Obtain a VirusTotal API key from [VirusTotal](https://www.virustotal.com/).
+2. Set the `VT_API_KEY` environment variable:
+    ```bash
+    export VT_API_KEY='your_virustotal_api_key'
+    ```
 
 ## Usage
 
-* Prepare a .txt file with a list of URLs you want to analyze, separated by commas (e.g., google.com,wscript.shell,techcommunity.microsoft.com,learn.microsoft.com,msrc.microsoft.com,a9tcsbn.run).
-* Run the script with the following command: **python VTUrlAnalyzerPy.py <path_to_your_file>** , where **<path_to_your_file>** is the path to the .txt file containing the URLs.
+1. Prepare a CSV file with a column named `Domain` containing the URLs to be analyzed.
+2. Run the script with the path to your CSV file as an argument:
+    ```bash
+    python VTUAnalyzer.py path_to_your_csv_file.csv
+    ```
 
-The script will analyze each URL and print the results to the console. After analyzing each URL, the script will pause for 15 seconds to avoid exceeding the VirusTotal API rate limit.
+## Example
+
+The script will:
+- Read the URLs from `domains.csv`
+- Analyze each URL using the VirusTotal API
+- Display a progress bar with the estimated time remaining
+- Save the results to `vt_results.csv`
+- Log detailed information to `vt_analysis.log`
 
 ## Output
 
-For each URL, the script will print:
+The output CSV file (`vt_results.csv`) will contain columns:
+- `URL`
+- `Detected Threats`
+- `Total Scans`
+- `Scan Date`
+- `Scan ID`
+- `Permalink`
+- `Category`
 
-- URL
-- Number of detected threats
-- Total number of scans
-- Date of the last scan
-- Scan ID
-- Permalink to the scan report
+## Logging
 
-If the script is unable to retrieve information for a particular URL, it will print an error message and continue with the next URL.
+Logs detailed information about the script execution to `vt_analysis.log`, including:
+- Requests made to the VirusTotal API
+- Responses received
+- Progress information
+- Errors and warnings
+
+## Troubleshooting
+
+- Ensure your VirusTotal API key is correctly set in the `VT_API_KEY` environment variable
+- Verify the CSV file path is correct and the file exists
+- Check `vt_analysis.log` for detailed error messages and debugging information
+
+## License
+
+This project is licensed under the MIT License - see the `LICENSE` file for details.
+
+## Acknowledgments
+
+- [VirusTotal](https://www.virustotal.com/) for the API
+- Authors and contributors of the Python libraries used

@@ -1,68 +1,122 @@
+import subprocess
+import sys
+import os
+
+def install_and_import(package):
+    try:
+        __import__(package)
+    except ImportError:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+# List of required packages
+required_packages = ['requests', 'pandas', 'click', 'tqdm']
+
+# Install required packages
+for package in required_packages:
+    install_and_import(package)
+
 import click
 import requests
 import time
-import os
 import pandas as pd
+import logging
+from tqdm import tqdm
+
+# Set up logging
+logging.basicConfig(filename='vt_analysis.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s:%(message)s')
 
 # Retrieve the VirusTotal API Key from environment variables
-api_key = os.getenv('VT_API_KEY')
+API_KEY = os.getenv('VT_API_KEY')
 
 def get_url_report(url):
-    # Prepare parameters for the request
-    params = {'apikey': api_key, 'resource': url}
+    """Retrieve the URL report from VirusTotal."""
+    params = {'apikey': API_KEY, 'resource': url}
+    logging.debug(f"Requesting report for URL: {url}")
     
-    # Make a GET request to the VirusTotal URL Report API
     response = requests.get('https://www.virustotal.com/vtapi/v2/url/report', params=params)
-    json_response = response.json()
-
-    # Check if the API response is successful
-    if json_response['response_code'] == 1:
-        # Extract key information from the response
-        positives = json_response['positives']
-        total = json_response['total']
-        scan_date = json_response['scan_date']
-        scan_id = json_response['scan_id']
-        permalink = json_response['permalink']
-        
-        # Return the extracted information
-        return positives, total, scan_date, scan_id, permalink
-    else:
-        # If the API response is not successful, print a warning message
-        print(f"Unexpected response for URL {url}: {json_response}")
+    
+    if response.status_code != 200:
+        logging.error(f"HTTP error {response.status_code} for URL: {url}")
         return None
 
-def analyze_urls(urls):
-    # Iterate through each URL in the list
-    for url in urls:
-        # Get the report for the URL
-        result = get_url_report(url)
-        
-        # Check if the report was successful
-        if result:
-            # Unpack the result
-            positives, total, scan_date, scan_id, permalink = result
-            
-            # Print the result
-            print(f'URL: {url}\nDetected Threats: {positives}\nTotal Scans: {total}\nScan Date: {scan_date}\nScan ID: {scan_id}\nPermalink: {permalink}\n')
+    json_response = response.json()
+    logging.debug(f"Response for URL {url}: {json_response}")
+
+    if json_response.get('response_code') == 1:
+        categories = json_response.get('categories', {})
+        if categories:
+            category = ', '.join([f"{vendor}: {cat}" for vendor, cat in categories.items()])
         else:
-            # If the report was not successful, print a warning message
-            print(f'No information available for URL: {url}\n')
+            category = 'Unknown'
         
-        # Pause for 15 seconds to avoid hitting the VirusTotal API rate limit
-        time.sleep(15)
+        return {
+            'URL': url,
+            'Detected Threats': json_response.get('positives', 0),
+            'Total Scans': json_response.get('total', 0),
+            'Scan Date': json_response.get('scan_date', 'Unknown'),
+            'Scan ID': json_response.get('scan_id', 'Unknown'),
+            'Permalink': json_response.get('permalink', 'Unknown'),
+            'Category': category
+        }
+    
+    logging.warning(f"Unexpected response for URL {url}: {json_response}")
+    return None
+
+def analyze_urls(urls):
+    """Analyze a list of URLs by retrieving their reports from VirusTotal."""
+    results = []
+    total_urls = len(urls)
+    
+    for i, url in enumerate(tqdm(urls, desc="Analyzing URLs", unit="url")):
+        start_time = time.time()
+        result = get_url_report(url)
+        end_time = time.time()
+        
+        elapsed_time = end_time - start_time
+        remaining_urls = total_urls - (i + 1)
+        estimated_time_left = remaining_urls * 15  # 15 seconds per URL due to rate limiting
+
+        if result:
+            results.append(result)
+            logging.info(f"Successfully retrieved report for URL: {url}")
+        else:
+            results.append({
+                'URL': url,
+                'Detected Threats': None,
+                'Total Scans': None,
+                'Scan Date': None,
+                'Scan ID': None,
+                'Permalink': None,
+                'Category': None
+            })
+            logging.warning(f"No information available for URL: {url}")
+        
+        logging.info(f"Processed {i + 1}/{total_urls} URLs. Estimated time left: {estimated_time_left / 60:.2f} minutes")
+        time.sleep(max(0, 15 - elapsed_time))  # Ensure at least 15 seconds between requests
+    
+    return results
 
 @click.command()
 @click.argument('file_path', type=click.Path(exists=True))
 def main(file_path):
-    # Read the CSV file
-    df = pd.read_csv(file_path)
+    """Main function to read CSV, analyze URLs, and save the results."""
+    logging.info(f"Reading CSV file from path: {file_path}")
     
-    # Extract the 'Domain' column and drop rows with missing values
+    try:
+        df = pd.read_csv(file_path)
+    except Exception as e:
+        logging.error(f"Error reading CSV file: {e}")
+        return
+    
     urls = df['Domain'].dropna().tolist()
-    
-    # Analyze the URLs
-    analyze_urls(urls)
+    logging.debug(f"Extracted URLs: {urls}")
 
-# If the script is run directly (instead of being imported), run the main function
+    results = analyze_urls(urls)
+    results_df = pd.DataFrame(results)
+    
+    output_file = 'vt_results.csv'
+    results_df.to_csv(output_file, index=False)
+    logging.info(f"Results saved to {output_file}")
+
 if __name__ == "__main__":
     main()
