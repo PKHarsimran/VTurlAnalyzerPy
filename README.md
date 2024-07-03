@@ -10,7 +10,7 @@ This script reads a list of URLs from a CSV file, analyzes them using the VirusT
 - Saves analysis results to a new CSV file
 - Displays a progress bar with estimated time remaining
 - Logs detailed information for debugging
-- Automatically installs required packages
+- Automatically installs required packages from `requirements.txt` if available
 
 ## Requirements
 
