@@ -2,6 +2,7 @@ import click
 import requests
 import time
 import os
+import pandas as pd
 
 # Retrieve the VirusTotal API Key from environment variables
 api_key = os.getenv('VT_API_KEY')
@@ -53,10 +54,11 @@ def analyze_urls(urls):
 @click.command()
 @click.argument('file_path', type=click.Path(exists=True))
 def main(file_path):
-    # Open the file containing the URLs
-    with open(file_path, 'r') as file:
-        # Read the URLs from the file and split them into a list
-        urls = file.read().split(',')
+    # Read the CSV file
+    df = pd.read_csv(file_path)
+    
+    # Extract the 'Domain' column and drop rows with missing values
+    urls = df['Domain'].dropna().tolist()
     
     # Analyze the URLs
     analyze_urls(urls)
