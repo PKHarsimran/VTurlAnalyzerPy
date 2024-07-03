@@ -2,10 +2,10 @@ import subprocess
 import sys
 import os
 import time
+import logging
 import click
 import requests
 import pandas as pd
-import logging
 from tqdm import tqdm
 
 def install_and_import(package):
@@ -30,14 +30,6 @@ def install_requirements(requirements_file='requirements.txt'):
 
 # Install required packages from requirements.txt if available
 install_requirements()
-
-# Import necessary packages
-import click
-import requests
-import time
-import pandas as pd
-import logging
-from tqdm import tqdm
 
 # Set up logging configuration
 logging.basicConfig(filename='vt_analysis.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s:%(message)s')
@@ -92,6 +84,7 @@ def analyze_urls(urls):
     total_urls = len(urls)  # Total number of URLs to analyze
     
     try:
+        # Iterate over each URL with a progress bar
         for i, url in enumerate(tqdm(urls, desc="Analyzing URLs", unit="url")):
             start_time = time.time()  # Record the start time of the request
             logging.info(f"Processing URL {i+1}/{total_urls}: {url}")
@@ -106,6 +99,7 @@ def analyze_urls(urls):
                 results.append(result)  # Append the result to the list if available
                 logging.info(f"Successfully retrieved report for URL: {url}")
             else:
+                # If no result is available, log and append default values
                 results.append({
                     'URL': url,
                     'Detected Threats': None,
@@ -122,11 +116,13 @@ def analyze_urls(urls):
             time.sleep(max(0, 15 - elapsed_time))
     
     except KeyboardInterrupt:
+        # Handle script interruption by user
         logging.error("Script aborted by user.")
         save_partial_results(results)
         sys.exit("Script aborted by user.")
     
     except Exception as e:
+        # Handle unexpected errors
         logging.error(f"Unexpected error: {e}")
         save_partial_results(results)
         sys.exit(f"Unexpected error: {e}")
